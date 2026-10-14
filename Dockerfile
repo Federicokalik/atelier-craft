@@ -2,7 +2,7 @@ FROM python:3.12-alpine
 
 RUN apk add --no-cache nginx
 
-LABEL org.opencontainers.image.source="https://github.com/Federicokalik/atelier-homelab" \
+LABEL org.opencontainers.image.source="https://github.com/Federicokalik/atelier-craft" \
       org.opencontainers.image.description="Independent self-hosted launcher for Craft web apps"
 
 COPY nginx.conf /etc/nginx/http.d/default.conf

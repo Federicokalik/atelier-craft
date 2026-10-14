@@ -45,11 +45,11 @@ function renderFilters() {
 
 function preview(app, index) {
   const cells = Array.from({length: 4}, (_, i) => `<i style="--h:${[64,38,78,52][(i + index) % 4]}%"></i>`).join('');
-  return `<div class="shot-schematic" role="img" aria-label="${escapeHtml(t('preview'))} ${escapeHtml(app.name)}"><span class="schematic-word">${escapeHtml(app.name)}</span><span class="schematic-bands">${cells}</span><span class="schematic-caption">ATELIER / ${String(index + 1).padStart(2,'0')}</span></div>`;
+  return `<div class="shot-schematic" role="img" aria-label="${escapeHtml(t('preview'))} ${escapeHtml(app.name)}"><span class="schematic-word">${escapeHtml(app.name)}</span><span class="schematic-bands">${cells}</span><span class="schematic-caption">ATELIER CRAFT / ${String(index + 1).padStart(2,'0')}</span></div>`;
 }
 
 function promo() {
-  return `<article class="promo-card"><span class="promo-index">+ / CRAFT APPS</span><h3>${escapeHtml(t('future_title'))}</h3><p>${escapeHtml(t('future_text'))}</p><ol><li>${escapeHtml(t('discover'))}</li><li>${escapeHtml(t('verify'))}</li><li>${escapeHtml(t('publish'))}</li></ol><div class="promo-host"><strong>${escapeHtml(t('host_title'))}</strong><p>${escapeHtml(t('host_text'))}</p><a href="https://github.com/Federicokalik/atelier-homelab">${escapeHtml(t('github_cta'))}</a></div><small>${escapeHtml(t('disclaimer'))}</small></article>`;
+  return `<article class="promo-card"><span class="promo-index">+ / CRAFT APPS</span><h3>${escapeHtml(t('future_title'))}</h3><p>${escapeHtml(t('future_text'))}</p><ol><li>${escapeHtml(t('discover'))}</li><li>${escapeHtml(t('verify'))}</li><li>${escapeHtml(t('publish'))}</li></ol><div class="promo-host"><strong>${escapeHtml(t('host_title'))}</strong><p>${escapeHtml(t('host_text'))}</p><a href="https://github.com/Federicokalik/atelier-craft">${escapeHtml(t('github_cta'))}</a></div><small>${escapeHtml(t('disclaimer'))}</small></article>`;
 }
 
 function render() {
@@ -60,7 +60,7 @@ function render() {
   $('catalog-count').textContent = `${apps.length} ${t('tools')}`;
   if (updatedAt) {
     const date = new Date(updatedAt);
-    $('last-updated').textContent = Number.isNaN(date.getTime()) ? t('catalog_updated') : `${t('updated')} ${new Intl.DateTimeFormat(locale,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(date)}`;
+    $('last-updated').textContent = Number.isNaN(date.getTime()) ? t('catalog_updated') : `${t('updated')} ${new Intl.DateTimeFormat(locale,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome',timeZoneName:'short'}).format(date)}`;
   }
   const query = $('search').value.trim().toLocaleLowerCase(locale);
   const filtered = apps.filter(app => {

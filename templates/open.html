@@ -6,12 +6,12 @@
   <meta name="theme-color" content="#111216">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <meta name="robots" content="noindex, nofollow">
-  <title>App — Atelier</title>
+  <title>App — Atelier Craft</title>
   <style>
     *{box-sizing:border-box}html,body{height:100%;margin:0}body{font:14px system-ui,-apple-system,"Segoe UI",sans-serif;background:#111216;color:#f5f5f6}
     iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#151619}
     .dock{position:fixed;z-index:50;right:0;bottom:18px;display:block}
-    .dock-trigger{position:relative;width:17px;height:82px;padding:5px 0;border:1px solid #777b89;border-right:0;background:#14161de8;color:#f5f5f6;font:700 9px ui-monospace,monospace;letter-spacing:.08em;writing-mode:vertical-rl;text-align:center;box-shadow:-5px 0 18px #0006;cursor:grab;touch-action:none}
+    .dock-trigger{position:relative;width:17px;height:130px;padding:5px 0;border:1px solid #777b89;border-right:0;background:#14161de8;color:#f5f5f6;font:700 9px ui-monospace,monospace;letter-spacing:.08em;writing-mode:vertical-rl;text-align:center;box-shadow:-5px 0 18px #0006;cursor:grab;touch-action:none}
     .dock-trigger:active{cursor:grabbing}.dock-trigger:hover,.dock.open .dock-trigger{background:#252a38}.update-dot{display:none;width:6px;height:6px;background:#f2ba65;border-radius:50%;margin:0 auto 4px}.dock.has-update .update-dot{display:block}
     .dock-panel{position:absolute;right:100%;bottom:0;width:min(310px,calc(100vw - 24px));padding:20px;background:#14161df5;border:1px solid #777b89;box-shadow:0 0 35px #0009;opacity:0;visibility:hidden;transform:translateX(7px);pointer-events:none;transition:opacity .18s,transform .18s,visibility .18s}
     .dock:focus-within .dock-panel,.dock.open .dock-panel{opacity:1;visibility:visible;transform:translateX(0);pointer-events:auto}
@@ -27,19 +27,19 @@
   <aside class="progress-notice" id="progress-notice" role="status" aria-live="polite" hidden>Aggiornamento in corso, torna fra poco</aside>
   <aside class="update-notice" id="update-notice" role="status" aria-live="polite" hidden>
     <strong id="update-title">Aggiornamento disponibile</strong>
-    <p>Salva il lavoro nell’app prima di aggiornare. Atelier non può salvare i documenti al posto tuo.</p>
+    <p>Salva il lavoro nell’app prima di aggiornare. Atelier Craft non può salvare i documenti al posto tuo.</p>
     <div class="update-actions"><button class="update-now" id="update-now" type="button">Ho salvato, aggiorna</button><button class="update-later" id="update-later" type="button">Alla prossima apertura</button></div>
   </aside>
   <div class="dock" id="dock">
     <div class="dock-panel" id="dock-panel">
-      <span class="panel-eyebrow">ATELIER / APP APERTA</span>
+      <span class="panel-eyebrow">ATELIER CRAFT / APP APERTA</span>
       <span class="panel-name" id="app-name"></span>
       <span class="panel-progress" id="panel-progress" hidden></span>
       <a class="back" href="/">← Torna alla suite <span aria-hidden="true">↗</span></a>
       <button class="panel-update" id="panel-update" type="button" hidden>Aggiornamento disponibile ↗</button>
       <a class="source" id="source" target="_blank" rel="noopener noreferrer">Progetto originale ↗</a>
     </div>
-    <button class="dock-trigger" id="dock-trigger" type="button" aria-label="Apri il menu Atelier; trascina per spostarlo" aria-controls="dock-panel" aria-expanded="false"><span class="update-dot" aria-hidden="true"></span>ATELIER</button>
+    <button class="dock-trigger" id="dock-trigger" type="button" aria-label="Apri il menu Atelier Craft; trascina per spostarlo" aria-controls="dock-panel" aria-expanded="false"><span class="update-dot" aria-hidden="true"></span>ATELIER CRAFT</button>
   </div>
   <script data-cfasync="false" src="/i18n.js?v=__I18N_VERSION__"></script>
   <script data-cfasync="false" src="/open.js?v=__OPEN_VERSION__" defer></script>

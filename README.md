@@ -1,10 +1,10 @@
-# Atelier Homelab
+# Atelier Craft
 
-An independent, self-hosted launcher for the official web builds of Craft creative apps. Open them from ChromeOS, Android or any modern desktop browser. The single prebuilt container image is published on GitHub Container Registry (GHCR). Atelier checks upstream releases every 12 hours by default, verifies their published SHA-256 checksums and switches to a new version only after a valid download.
+An independent, self-hosted launcher for the official web builds of Craft creative apps. Open them from ChromeOS, Android or any modern desktop browser. The single prebuilt container image is published on GitHub Container Registry (GHCR). Atelier Craft checks upstream releases every 12 hours by default, verifies their published SHA-256 checksums and switches to a new version only after a valid download.
 
-**Atelier is created by [Federico Calicchia](https://calicchia.design). It is not affiliated with, endorsed by or operated by the ArtCraft team.** The Craft apps, their names, code and rights belong to their respective owners. See the [original app catalogue](https://getartcraft.com/apps) and each upstream repository for their licenses and terms. Atelier's MIT license covers only its own launcher code. The repository contains no upstream app binaries or unlicensed screenshots/icons.
+**Atelier Craft is created by [Federico Calicchia](https://calicchia.design). It is not affiliated with, endorsed by or operated by the ArtCraft team.** The Craft apps, their names, code and rights belong to their respective owners. See the [original app catalogue](https://getartcraft.com/apps) and each upstream repository for their licenses and terms. Atelier Craft's MIT license covers only its own launcher code. The repository contains no upstream app binaries or unlicensed screenshots/icons.
 
-PhotoCraft is described by its authors as a [Photoshop alternative](https://github.com/storytold/photocraft); VectorCraft as an [Illustrator alternative](https://github.com/storytold/vectorcraft). These descriptions refer to the original apps, not a feature-equivalence promise by Atelier.
+PhotoCraft is described by its authors as a [Photoshop alternative](https://github.com/storytold/photocraft); VectorCraft as an [Illustrator alternative](https://github.com/storytold/vectorcraft). These descriptions refer to the original apps, not a feature-equivalence promise by Atelier Craft.
 
 The catalogue also identifies each app's area of use through familiar products such as Adobe Premiere Pro, Lightroom Classic, Acrobat, After Effects, InDesign and Audition; Figma; Microsoft Word, PowerPoint and Excel; and Autodesk AutoCAD. These product names are comparison references only. They do not imply endorsement, affiliation or identical functionality, and web builds may differ from the features described on the original app pages.
 
@@ -12,11 +12,11 @@ The catalogue also identifies each app's area of use through familiar products s
 
 ```sh
 mkdir atelier && cd atelier
-curl -fsSLO https://raw.githubusercontent.com/Federicokalik/atelier-homelab/main/compose.yaml
+curl -fsSLO https://raw.githubusercontent.com/Federicokalik/atelier-craft/main/compose.yaml
 docker compose up -d
 ```
 
-Open `http://SERVER-IP:8080`. Compose pulls the public [GHCR image](https://github.com/Federicokalik/atelier-homelab/pkgs/container/atelier-homelab); no local image build or registry login is needed. On the first start, the bundled updater downloads compatible app builds from the original projects, verifies their checksums and stores them in the persistent `app_data` Docker volume. Cards become available individually. App binaries are not embedded in the GHCR image. For a different port or update schedule, download `.env.example` from the repository as `.env` and edit it, or set the environment variables shown in `compose.yaml`.
+Open `http://SERVER-IP:8080`. Compose pulls the public [GHCR image](https://github.com/Federicokalik/atelier-craft/pkgs/container/atelier-craft); no local image build or registry login is needed. On the first start, the bundled updater downloads compatible app builds from the original projects, verifies their checksums and stores them in the persistent `app_data` Docker volume. Cards become available individually. App binaries are not embedded in the GHCR image. For a different port or update schedule, download `.env.example` from the repository as `.env` and edit it, or set the environment variables shown in `compose.yaml`.
 
 The GitHub Actions workflow builds and publishes the launcher image for `linux/amd64` and `linux/arm64` after changes to the runtime files on `main`. To refresh the container later, run `docker compose pull && docker compose up -d`. The app updater continues checking original releases automatically between container refreshes. Existing app data survives container recreation in the named volume.
 
@@ -36,11 +36,13 @@ Future-app discovery is enabled by default. It checks public `storytold` reposit
 
 While a build is downloading or being verified, the relevant card and any open app wrapper show a localized **update in progress, come back shortly** or **installation in progress** message. An already installed version remains usable while its replacement is prepared. The catalogue is written atomically and the launcher checks it every 15 seconds.
 
-Updates are installed automatically once for the whole self-hosted instance; no account or per-user installation is needed. An open app stays on the exact version it loaded. Its wrapper checks the catalogue every 15 seconds and whenever its tab regains focus or connectivity. If a newer version arrives, an in-page notice offers **save your work, then update** or **use it next time**. The latter loads the new version on the next opening. An open launcher tab also announces completed updates. These notices are per open browser tab, so users do not need accounts or notification permissions. Atelier cannot save documents on behalf of an upstream app or notify a browser after the page has closed. The draggable Atelier tab opens the return link and update notice; its position and favorites are stored in that browser.
+Open launcher tabs refresh their cards, availability, update notices and last-check time without reloading the page. The last-check timestamp uses the `Europe/Rome` time zone, so it displays CET (UTC+1) in winter and CEST (UTC+2) in summer.
+
+Updates are installed automatically once for the whole self-hosted instance; no account or per-user installation is needed. An open app stays on the exact version it loaded. Its wrapper checks the catalogue every 15 seconds and whenever its tab regains focus or connectivity. If a newer version arrives, an in-page notice offers **save your work, then update** or **use it next time**. The latter loads the new version on the next opening. An open launcher tab also announces completed updates. These notices are per open browser tab, so users do not need accounts or notification permissions. Atelier Craft cannot save documents on behalf of an upstream app or notify a browser after the page has closed. The draggable Atelier Craft tab opens the return link and update notice; its position and favorites are stored in that browser.
 
 ## Assets, credits and boundaries
 
-Atelier uses original schematic preview art, letter icons, and localized social preview images. Official ArtCraft screenshots and icons are deliberately absent because their redistribution rights have not been verified. See [ASSETS.md](ASSETS.md). Font files under `web/fonts/` have their own OFL notices. Before adding any third-party artwork, record its exact source and redistribution license.
+Atelier Craft uses original schematic preview art, letter icons, and localized social preview images. Official ArtCraft screenshots and icons are deliberately absent because their redistribution rights have not been verified. See [ASSETS.md](ASSETS.md). Font files under `web/fonts/` have their own OFL notices. Before adding any third-party artwork, record its exact source and redistribution license.
 
 The app builds are fetched at runtime from upstream releases and retain their own licenses. The launcher does not modify the downloaded app code or provide document storage/sync. Android touch support depends on the individual app.
 

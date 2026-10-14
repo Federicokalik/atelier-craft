@@ -1,6 +1,6 @@
 services:
   atelier:
-    image: ghcr.io/federicokalik/atelier-homelab:latest
+    image: ghcr.io/federicokalik/atelier-craft:latest
     pull_policy: always
     restart: unless-stopped
     ports:

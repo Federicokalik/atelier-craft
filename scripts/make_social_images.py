@@ -1,4 +1,4 @@
-"""Render original, localized Open Graph and Twitter images for Atelier."""
+"""Render original, localized Open Graph and Twitter images for Atelier Craft."""
 
 from pathlib import Path
 import sys
@@ -38,7 +38,7 @@ def render(lang, kind, height):
 
     draw.rounded_rectangle((56, 56, 122, 122), radius=9, fill="#d9e4ff")
     draw.text((72, 57), "A", font=font(50), fill="#151c2d")
-    draw.text((145, 48), "Atelier", font=font(65), fill="#f6f7fb")
+    draw.text((145, 48), "Atelier Craft", font=fit(draw, "Atelier Craft", 470, 65), fill="#f6f7fb")
     draw.text((57, 161), "HOMELAB  /  13 WEB APPS", font=font(18), fill="#82abef", spacing=3)
 
     left = 56
@@ -68,7 +68,7 @@ def render(lang, kind, height):
     footer_y = height - 61
     draw.line((56, footer_y - 17, 1144, footer_y - 17), fill="#5a6171", width=1)
     draw.text((56, footer_y), "CALICCHIA.DESIGN", font=font(16), fill="#d5dcf0")
-    draw.text((940, footer_y), "ATELIER / 2026", font=font(15), fill="#939cad")
+    draw.text((900, footer_y), "ATELIER CRAFT / 2026", font=font(15), fill="#939cad")
     code = lang.lower().replace("-", "-")
     target = WEB / f"{kind}-{code}.png"
     image.save(target, optimize=True)

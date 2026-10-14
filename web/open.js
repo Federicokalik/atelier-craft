@@ -9,7 +9,7 @@
     document.querySelector('.update-notice p').textContent = t('update_help');
     document.querySelector('#update-now').textContent = t('update_now');
     document.querySelector('#update-later').textContent = t('update_later');
-    document.querySelector('.panel-eyebrow').textContent = `ATELIER / ${t('app_open')}`;
+    document.querySelector('.panel-eyebrow').textContent = `ATELIER CRAFT / ${t('app_open')}`;
     document.querySelector('.back').href = localePaths[locale];
     document.querySelector('.back').firstChild.textContent = `← ${t('back')} `;
     document.querySelector('#panel-update').textContent = `${t('update_available')} ↗`;
@@ -71,7 +71,7 @@
       document.getElementById('app-name').textContent = t('invalid');
     } else {
       const name = names[slug] || slug.replace(/craft$/, 'Craft').replace(/^./, c => c.toUpperCase());
-      document.title = `${name} — Atelier`;
+      document.title = `${name} — Atelier Craft`;
       document.getElementById('app-name').textContent = name;
       document.getElementById('source').href = `https://github.com/storytold/${slug}`;
       frame.title = name;
