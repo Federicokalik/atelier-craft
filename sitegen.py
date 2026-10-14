@@ -1,0 +1,160 @@
+"""Generate the seven crawlable launcher pages and versioned asset URLs."""
+
+from __future__ import annotations
+
+import hashlib
+import html
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).parent
+WEB = ROOT / "web"
+BASE = "https://atelier.federico.im"
+LANGS = ["it", "en", "fr", "nl-BE", "de", "es", "pt-PT"]
+PATHS = {"it": "/", "en": "/en/", "fr": "/fr/", "nl-BE": "/nl-be/", "de": "/de/", "es": "/es/", "pt-PT": "/pt-pt/"}
+LABELS = {"it": "Italiano", "en": "English", "fr": "Français", "nl-BE": "Nederlands (BE)", "de": "Deutsch", "es": "Español", "pt-PT": "Português (PT)"}
+
+# Every row follows LANGS. Keep source and generated UI text together.
+T = {
+"title": ["Atelier — app creative web nel tuo homelab", "Atelier — creative web apps for your homelab", "Atelier — applications créatives web à auto-héberger", "Atelier — creatieve webapps voor je homelab", "Atelier — kreative Web-Apps für dein Homelab", "Atelier — aplicaciones creativas web en tu servidor", "Atelier — aplicações criativas web no teu servidor"],
+"meta": ["Launcher indipendente per le build web delle app Craft: installazione self-hosted, aggiornamenti automatici e accesso da ChromeOS e Android.", "Independent launcher for Craft web app builds: self-hosting, automatic updates and access from ChromeOS and Android.", "Lanceur indépendant pour les versions web des applications Craft : auto-hébergement, mises à jour automatiques et accès depuis ChromeOS et Android.", "Onafhankelijke launcher voor Craft-webapps: zelf hosten, automatische updates en toegang via ChromeOS en Android.", "Unabhängiger Launcher für Craft-Web-Apps: selbst hosten, automatische Updates und Zugriff über ChromeOS und Android.", "Lanzador independiente para las versiones web de las aplicaciones Craft: autoalojamiento, actualizaciones automáticas y acceso desde ChromeOS y Android.", "Launcher independente para as versões web das aplicações Craft: alojamento próprio, atualizações automáticas e acesso no ChromeOS e Android."],
+"brand_home": ["Atelier, pagina iniziale", "Atelier, home", "Atelier, accueil", "Atelier, startpagina", "Atelier, Startseite", "Atelier, inicio", "Atelier, página inicial"],
+"original_projects": ["Progetti originali ↗", "Original projects ↗", "Projets d’origine ↗", "Originele projecten ↗", "Originalprojekte ↗", "Proyectos originales ↗", "Projetos originais ↗"],
+"loading": ["Catalogo in aggiornamento", "Updating catalogue", "Mise à jour du catalogue", "Catalogus wordt bijgewerkt", "Katalog wird aktualisiert", "Actualizando catálogo", "A atualizar catálogo"],
+"hero_eyebrow": ["ATELIER / APP CRAFT", "ATELIER / CRAFT APPS", "ATELIER / APPS CRAFT", "ATELIER / CRAFT-APPS", "ATELIER / CRAFT-APPS", "ATELIER / APPS CRAFT", "ATELIER / APPS CRAFT"],
+"hero_a": ["Le tue app.", "Your apps.", "Vos applications.", "Jouw apps.", "Deine Apps.", "Tus aplicaciones.", "As tuas aplicações."],
+"hero_b": ["Un solo spazio.", "One place.", "Un seul endroit.", "Eén plek.", "Ein Ort.", "Un solo lugar.", "Um só lugar."],
+"hero_desc": ["Le build web delle app Craft nel tuo homelab. Aprile dal browser e ritrovale in un unico catalogo.", "Craft web app builds in your homelab. Open them in your browser from one catalogue.", "Les versions web des applications Craft dans votre homelab. Ouvrez-les dans un seul catalogue.", "Craft-webapps in je homelab. Open ze vanuit één catalogus in je browser.", "Craft-Web-Apps in deinem Homelab. Öffne sie im Browser aus einem Katalog.", "Las versiones web de las aplicaciones Craft en tu servidor. Ábrelas desde un único catálogo.", "As versões web das aplicações Craft no teu servidor. Abre-as a partir de um único catálogo."],
+"available_apps": ["APP DISPONIBILI", "AVAILABLE APPS", "APPS DISPONIBLES", "BESCHIKBARE APPS", "VERFÜGBARE APPS", "APPS DISPONIBLES", "APPS DISPONÍVEIS"],
+"checking": ["Verifica in corso", "Checking", "Vérification en cours", "Controleren", "Prüfung läuft", "Comprobando", "A verificar"],
+"apps_heading": ["Le app", "The apps", "Les applications", "De apps", "Die Apps", "Las aplicaciones", "As aplicações"],
+"all": ["Tutte", "All", "Toutes", "Alle", "Alle", "Todas", "Todas"],
+"favorites": ["Preferite", "Favorites", "Favoris", "Favorieten", "Favoriten", "Favoritas", "Favoritas"],
+"install": ["Da installare", "To install", "À installer", "Te installeren", "Zu installieren", "Por instalar", "Por instalar"],
+"search": ["Cerca un’app", "Search apps", "Rechercher une app", "Zoek een app", "App suchen", "Buscar una app", "Pesquisar uma app"],
+"tools": ["strumenti", "tools", "outils", "tools", "Werkzeuge", "herramientas", "ferramentas"],
+"ready": ["app pronte", "apps ready", "apps prêtes", "apps klaar", "Apps bereit", "apps listas", "apps prontas"],
+"updated": ["Aggiornato", "Updated", "Mis à jour", "Bijgewerkt", "Aktualisiert", "Actualizado", "Atualizado"],
+"catalog_updated": ["Catalogo aggiornato", "Catalogue updated", "Catalogue mis à jour", "Catalogus bijgewerkt", "Katalog aktualisiert", "Catálogo actualizado", "Catálogo atualizado"],
+"none": ["Nessuna app trovata.", "No apps found.", "Aucune app trouvée.", "Geen apps gevonden.", "Keine Apps gefunden.", "No se encontraron apps.", "Nenhuma app encontrada."],
+"fav_hint": ["Aggiungi un’app alle preferite con la stella sulla sua scheda.", "Use the star on a card to add an app to favorites.", "Utilisez l’étoile sur une fiche pour ajouter une app aux favoris.", "Gebruik de ster op een kaart om een app aan favorieten toe te voegen.", "Mit dem Stern auf einer Karte kannst du eine App favorisieren.", "Usa la estrella de una tarjeta para añadir una app a favoritas.", "Usa a estrela de um cartão para adicionar uma app aos favoritos."],
+"open": ["Apri app ↗", "Open app ↗", "Ouvrir l’app ↗", "Open app ↗", "App öffnen ↗", "Abrir app ↗", "Abrir app ↗"],
+"source": ["Sorgente ↗", "Source ↗", "Code source ↗", "Broncode ↗", "Quellcode ↗", "Código fuente ↗", "Código-fonte ↗"],
+"available": ["Disponibile", "Available", "Disponible", "Beschikbaar", "Verfügbar", "Disponible", "Disponível"],
+"waiting": ["In attesa", "Pending", "En attente", "In afwachting", "Ausstehend", "Pendiente", "Pendente"],
+"new_app": ["Nuova app", "New app", "Nouvelle app", "Nieuwe app", "Neue App", "Nueva app", "Nova app"],
+"add_fav": ["Aggiungi", "Add", "Ajouter", "Voeg toe", "Hinzufügen", "Añadir", "Adicionar"],
+"remove_fav": ["Rimuovi", "Remove", "Retirer", "Verwijder", "Entfernen", "Quitar", "Remover"],
+"to_fav": ["alle preferite", "to favorites", "aux favoris", "aan favorieten", "zu Favoriten", "a favoritas", "aos favoritos"],
+"from_fav": ["dalle preferite", "from favorites", "des favoris", "uit favorieten", "aus Favoriten", "de favoritas", "dos favoritos"],
+"preview": ["Anteprima schematica originale di", "Original schematic preview of", "Aperçu schématique original de", "Originele schematische voorvertoning van", "Eigene schematische Vorschau von", "Vista esquemática original de", "Pré-visualização esquemática original de"],
+"future_title": ["Nuove app, automaticamente.", "New apps, automatically.", "De nouvelles apps, automatiquement.", "Nieuwe apps, automatisch.", "Neue Apps, automatisch.", "Nuevas apps, automáticamente.", "Novas apps, automaticamente."],
+"future_text": ["Atelier cerca le nuove app Craft pubblicate dagli autori. Quando trova una release web compatibile con checksum verificabile, la installa e la mostra qui. Non tutte le nuove app avranno necessariamente una build web.", "Atelier checks for new Craft apps published by their authors. When it finds a compatible web release with a verifiable checksum, it installs and lists it here. Some future apps may not have a web build.", "Atelier recherche les nouvelles apps Craft publiées par leurs auteurs. Si une version web compatible possède une somme de contrôle vérifiable, elle est installée et ajoutée ici. Certaines apps peuvent ne pas avoir de version web.", "Atelier zoekt nieuwe Craft-apps van hun makers. Een geschikte webrelease met controleerbare checksum wordt geïnstalleerd en hier getoond. Sommige nieuwe apps hebben mogelijk geen webversie.", "Atelier sucht nach neuen Craft-Apps ihrer Entwickler. Eine kompatible Web-Version mit prüfbarer Prüfsumme wird installiert und hier angezeigt. Manche neuen Apps haben möglicherweise keine Web-Version.", "Atelier busca nuevas apps Craft publicadas por sus autores. Si encuentra una versión web compatible con suma de verificación comprobable, la instala y la muestra aquí. Algunas apps futuras podrían no tener versión web.", "O Atelier procura novas apps Craft publicadas pelos autores. Quando encontra uma versão web compatível com checksum verificável, instala-a e mostra-a aqui. Algumas apps futuras poderão não ter versão web."],
+"discover": ["Scoperta", "Discover", "Découverte", "Ontdekken", "Entdecken", "Descubrir", "Descobrir"],
+"verify": ["Verifica", "Verify", "Vérification", "Verifiëren", "Prüfen", "Verificar", "Verificar"],
+"publish": ["Installazione", "Install", "Installation", "Installeren", "Installieren", "Instalar", "Instalar"],
+"host_title": ["Ospita Atelier sul tuo server", "Host Atelier on your server", "Hébergez Atelier sur votre serveur", "Host Atelier op je eigen server", "Atelier auf deinem Server hosten", "Aloja Atelier en tu servidor", "Aloja o Atelier no teu servidor"],
+"host_text": ["Codice aperto, Docker Compose e aggiornamenti automatici. Replica il launcher nel tuo homelab.", "Open source code, Docker Compose and automatic updates. Run the launcher in your homelab.", "Code ouvert, Docker Compose et mises à jour automatiques. Installez le lanceur chez vous.", "Open broncode, Docker Compose en automatische updates. Draai de launcher in je homelab.", "Offener Quellcode, Docker Compose und automatische Updates. Betreibe den Launcher im Homelab.", "Código abierto, Docker Compose y actualizaciones automáticas. Instala el lanzador en tu servidor.", "Código aberto, Docker Compose e atualizações automáticas. Instala o launcher no teu servidor."],
+"github_cta": ["Guarda il progetto su GitHub ↗", "View project on GitHub ↗", "Voir le projet sur GitHub ↗", "Bekijk het project op GitHub ↗", "Projekt auf GitHub ansehen ↗", "Ver el proyecto en GitHub ↗", "Ver projeto no GitHub ↗"],
+"comparison": ["PhotoCraft è presentata dai suoi autori come alternativa a Photoshop; VectorCraft come alternativa a Illustrator. Atelier ospita le loro build web: funzioni e compatibilità dipendono dai progetti originali.", "Its authors present PhotoCraft as a Photoshop alternative and VectorCraft as an Illustrator alternative. Atelier hosts their web builds; features and compatibility depend on the original projects.", "Leurs auteurs présentent PhotoCraft comme une alternative à Photoshop et VectorCraft comme une alternative à Illustrator. Atelier héberge leurs versions web ; les fonctionnalités dépendent des projets d’origine.", "De makers presenteren PhotoCraft als alternatief voor Photoshop en VectorCraft als alternatief voor Illustrator. Atelier host hun webversies; functies hangen af van de originele projecten.", "Die Entwickler bezeichnen PhotoCraft als Photoshop-Alternative und VectorCraft als Illustrator-Alternative. Atelier hostet deren Web-Versionen; Funktionen hängen von den Originalprojekten ab.", "Sus autores presentan PhotoCraft como alternativa a Photoshop y VectorCraft como alternativa a Illustrator. Atelier aloja sus versiones web; las funciones dependen de los proyectos originales.", "Os autores apresentam o PhotoCraft como alternativa ao Photoshop e o VectorCraft como alternativa ao Illustrator. O Atelier aloja as versões web; as funcionalidades dependem dos projetos originais."],
+"disclaimer": ["Atelier è un launcher indipendente creato da Federico Calicchia. Non è affiliato, approvato né gestito dal team ArtCraft. Le app, i loro nomi e i relativi diritti appartengono ai rispettivi titolari.", "Atelier is an independent launcher by Federico Calicchia. It is not affiliated with, endorsed or operated by the ArtCraft team. The apps, names and related rights belong to their respective owners.", "Atelier est un lanceur indépendant créé par Federico Calicchia. Il n’est ni affilié, ni approuvé, ni géré par l’équipe ArtCraft. Les apps et leurs droits appartiennent à leurs titulaires respectifs.", "Atelier is een onafhankelijke launcher van Federico Calicchia. Het is niet verbonden aan, goedgekeurd door of beheerd door het ArtCraft-team. De apps en rechten blijven van hun eigenaars.", "Atelier ist ein unabhängiger Launcher von Federico Calicchia. Er ist weder mit dem ArtCraft-Team verbunden noch von ihm unterstützt oder betrieben. Apps und Rechte gehören ihren jeweiligen Inhabern.", "Atelier es un lanzador independiente creado por Federico Calicchia. No está afiliado, aprobado ni gestionado por el equipo ArtCraft. Las apps y sus derechos pertenecen a sus titulares.", "O Atelier é um launcher independente de Federico Calicchia. Não é afiliado, aprovado nem gerido pela equipa ArtCraft. As apps e os seus direitos pertencem aos respetivos titulares."],
+"rights": ["Progetti e diritti originali", "Original projects and rights", "Projets et droits d’origine", "Originele projecten en rechten", "Originalprojekte und Rechte", "Proyectos y derechos originales", "Projetos e direitos originais"],
+"made_by": ["Creato da", "Made by", "Créé par", "Gemaakt door", "Erstellt von", "Creado por", "Criado por"],
+"update_available": ["Aggiornamento disponibile", "Update available", "Mise à jour disponible", "Update beschikbaar", "Update verfügbar", "Actualización disponible", "Atualização disponível"],
+"update_for": ["Nuova versione di {name} disponibile", "New version of {name} available", "Nouvelle version de {name} disponible", "Nieuwe versie van {name} beschikbaar", "Neue Version von {name} verfügbar", "Nueva versión de {name} disponible", "Nova versão de {name} disponível"],
+"update_help": ["Salva il lavoro nell’app prima di aggiornare. Atelier non può salvare i documenti al posto tuo.", "Save your work in the app before updating. Atelier cannot save documents for you.", "Enregistrez votre travail dans l’app avant la mise à jour. Atelier ne peut pas enregistrer vos documents à votre place.", "Sla je werk in de app op voordat je bijwerkt. Atelier kan je documenten niet voor je opslaan.", "Speichere deine Arbeit in der App vor dem Update. Atelier kann deine Dokumente nicht für dich speichern.", "Guarda tu trabajo en la app antes de actualizar. Atelier no puede guardar tus documentos por ti.", "Guarda o trabalho na app antes de atualizar. O Atelier não pode guardar os teus documentos por ti."],
+"update_now": ["Ho salvato, aggiorna", "Saved, update now", "J’ai enregistré, mettre à jour", "Opgeslagen, nu bijwerken", "Gespeichert, jetzt aktualisieren", "He guardado, actualizar", "Guardei, atualizar"],
+"update_later": ["Alla prossima apertura", "On next open", "À la prochaine ouverture", "Bij de volgende keer openen", "Beim nächsten Öffnen", "Al abrir de nuevo", "Na próxima abertura"],
+"app_open": ["APP APERTA", "OPEN APP", "APP OUVERTE", "OPEN APP", "GEÖFFNETE APP", "APP ABIERTA", "APP ABERTA"],
+"back": ["Torna alla suite", "Back to suite", "Retour à la suite", "Terug naar de suite", "Zurück zur Suite", "Volver a la suite", "Voltar à suite"],
+"original": ["Progetto originale ↗", "Original project ↗", "Projet d’origine ↗", "Origineel project ↗", "Originalprojekt ↗", "Proyecto original ↗", "Projeto original ↗"],
+"invalid": ["App non valida", "Invalid app", "App non valide", "Ongeldige app", "Ungültige App", "App no válida", "App inválida"],
+"dock_label": ["Apri il menu Atelier; trascina per spostarlo", "Open Atelier menu; drag to move", "Ouvrir le menu Atelier ; glisser pour déplacer", "Open het Atelier-menu; sleep om te verplaatsen", "Atelier-Menü öffnen; zum Verschieben ziehen", "Abrir menú Atelier; arrastrar para mover", "Abrir menu Atelier; arrastar para mover"],
+"cat_image": ["Immagini", "Images", "Images", "Beeld", "Bilder", "Imágenes", "Imagens"],
+"cat_vector": ["Vettoriale", "Vector", "Vectoriel", "Vector", "Vektor", "Vectorial", "Vetorial"],
+"cat_video": ["Video", "Video", "Vidéo", "Video", "Video", "Vídeo", "Vídeo"],
+"cat_photo": ["Fotografia", "Photography", "Photographie", "Fotografie", "Fotografie", "Fotografía", "Fotografia"],
+"cat_docs": ["Documenti", "Documents", "Documents", "Documenten", "Dokumente", "Documentos", "Documentos"],
+"cat_motion": ["Motion", "Motion", "Animation", "Motion", "Motion", "Animación", "Animação"],
+"cat_layout": ["Layout", "Layout", "Mise en page", "Opmaak", "Layout", "Maquetación", "Paginação"],
+"cat_ui": ["Interfacce", "Interfaces", "Interfaces", "Interfaces", "Oberflächen", "Interfaces", "Interfaces"],
+"cat_text": ["Scrittura", "Writing", "Rédaction", "Tekst", "Schreiben", "Escritura", "Escrita"],
+"cat_audio": ["Audio", "Audio", "Audio", "Audio", "Audio", "Audio", "Áudio"],
+"cat_slides": ["Presentazioni", "Presentations", "Présentations", "Presentaties", "Präsentationen", "Presentaciones", "Apresentações"],
+"cat_cad": ["Progettazione", "Drafting", "Dessin technique", "Technisch ontwerp", "Konstruktion", "Diseño técnico", "Desenho técnico"],
+"cat_data": ["Dati", "Data", "Données", "Gegevens", "Daten", "Datos", "Dados"],
+"desc_photocraft": ["Livelli, maschere e fotoritocco", "Layers, masks and photo editing", "Calques, masques et retouche photo", "Lagen, maskers en fotobewerking", "Ebenen, Masken und Bildbearbeitung", "Capas, máscaras y retoque fotográfico", "Camadas, máscaras e edição de fotografia"],
+"desc_vectorcraft": ["Illustrazione e tracciati", "Illustration and vector paths", "Illustration et tracés vectoriels", "Illustratie en vectorpaden", "Illustration und Vektorpfade", "Ilustración y trazados vectoriales", "Ilustração e caminhos vetoriais"],
+"desc_filmcraft": ["Montaggio video", "Video editing", "Montage vidéo", "Videobewerking", "Videoschnitt", "Edición de vídeo", "Edição de vídeo"],
+"desc_lightcraft": ["Libreria e sviluppo RAW", "Photo library and RAW editing", "Photothèque et développement RAW", "Fotobibliotheek en RAW-bewerking", "Fotobibliothek und RAW-Entwicklung", "Biblioteca y revelado RAW", "Biblioteca e revelação RAW"],
+"desc_pdfcraft": ["Lettura e modifica PDF", "Read and edit PDFs", "Lecture et modification de PDF", "PDF's lezen en bewerken", "PDFs lesen und bearbeiten", "Lectura y edición de PDF", "Ler e editar PDF"],
+"desc_effectcraft": ["Motion graphics ed effetti", "Motion graphics and effects", "Animation graphique et effets", "Motion graphics en effecten", "Motion Graphics und Effekte", "Gráficos animados y efectos", "Gráficos animados e efeitos"],
+"desc_designcraft": ["Impaginazione e pubblicazione", "Page layout and publishing", "Mise en page et publication", "Paginaopmaak en publiceren", "Seitenlayout und Publikation", "Maquetación y publicación", "Paginação e publicação"],
+"desc_figcraft": ["Design e prototipazione", "Interface design and prototyping", "Design d’interface et prototypage", "Interfaceontwerp en prototyping", "Oberflächendesign und Prototyping", "Diseño de interfaces y prototipado", "Design de interfaces e prototipagem"],
+"desc_wordcraft": ["Documenti di testo", "Text documents", "Documents texte", "Tekstdocumenten", "Textdokumente", "Documentos de texto", "Documentos de texto"],
+"desc_soundcraft": ["Registrazione e mixaggio", "Recording and mixing", "Enregistrement et mixage", "Opnemen en mixen", "Aufnahme und Mischung", "Grabación y mezcla", "Gravação e mistura"],
+"desc_deckcraft": ["Slide e presentazioni", "Slides and presentations", "Diapositives et présentations", "Dia's en presentaties", "Folien und Präsentationen", "Diapositivas y presentaciones", "Diapositivos e apresentações"],
+"desc_cadcraft": ["Disegno tecnico", "Technical drawing", "Dessin technique", "Technisch tekenen", "Technisches Zeichnen", "Dibujo técnico", "Desenho técnico"],
+"desc_gridcraft": ["Fogli di calcolo", "Spreadsheets", "Feuilles de calcul", "Spreadsheets", "Tabellenkalkulation", "Hojas de cálculo", "Folhas de cálculo"],
+}
+
+def digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()[:12]
+
+def main() -> None:
+    assert all(len(values) == len(LANGS) for values in T.values())
+    copies = {lang: {key: values[i] for key, values in T.items()} for i, lang in enumerate(LANGS)}
+    (WEB / "i18n.js").write_text("window.ATELIER_COPY = " + json.dumps(copies, ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")
+    css_v, js_v, i18n_v, open_v = (digest(WEB / name) for name in ("style.css", "app.js", "i18n.js", "open.js"))
+    alternates = "\n".join(f'  <link rel="alternate" hreflang="{lang}" href="{BASE}{path}">' for lang, path in PATHS.items())
+    alternates += f'\n  <link rel="alternate" hreflang="x-default" href="{BASE}/">'
+    for lang in LANGS:
+        c = copies[lang]
+        e = lambda key: html.escape(c[key], quote=True)
+        language_links = "".join(f'<a href="{path}" lang="{code}" hreflang="{code}"{(" aria-current=\"page\"" if code == lang else "")}>{html.escape(LABELS[code])}</a>' for code, path in PATHS.items())
+        url = BASE + PATHS[lang]
+        known_links = " ".join(f'<a href="https://github.com/storytold/{slug}" target="_blank" rel="noopener noreferrer">{name}</a>' for slug, name in (("photocraft", "PhotoCraft"), ("vectorcraft", "VectorCraft"), ("filmcraft", "FilmCraft"), ("lightcraft", "LightCraft"), ("pdfcraft", "PdfCraft"), ("effectcraft", "EffectCraft"), ("designcraft", "DesignCraft"), ("figcraft", "FigCraft"), ("wordcraft", "WordCraft"), ("soundcraft", "SoundCraft"), ("deckcraft", "DeckCraft"), ("cadcraft", "CADCraft"), ("gridcraft", "GridCraft")))
+        page = f'''<!doctype html>
+<html lang="{lang}">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111216">
+  <meta name="description" content="{e('meta')}">
+  <link rel="canonical" href="{url}">
+{alternates}
+  <meta property="og:type" content="website"><meta property="og:title" content="{e('title')}">
+  <meta property="og:description" content="{e('meta')}"><meta property="og:url" content="{url}">
+  <link rel="manifest" href="{PATHS[lang]}manifest.webmanifest"><link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css?v={css_v}">
+  <title>{e('title')}</title>
+</head>
+<body data-locale="{lang}">
+  <header class="site-header"><div class="header-inner">
+    <a href="{PATHS[lang]}" class="brand" aria-label="{e('brand_home')}"><span class="brand-icon">A</span><span>Atelier<small>HOMELAB</small></span></a>
+    <div class="header-links"><span class="header-status"><i></i><span id="header-count">{e('loading')}</span></span><nav class="language-list" aria-label="Language / Lingua">{language_links}</nav><a class="official-link" href="https://getartcraft.com/apps" target="_blank" rel="noopener noreferrer">{e('original_projects')}</a></div>
+  </div></header>
+  <main class="page">
+    <section class="intro" aria-labelledby="page-title"><div><span class="eyebrow">{e('hero_eyebrow')}</span><h1 id="page-title">{e('hero_a')}<br><span class="accent">{e('hero_b')}</span></h1><p>{e('hero_desc')}</p></div><div class="summary" aria-label="{e('available_apps')}"><span class="summary-label">{e('available_apps')}</span><strong id="ready-count">—<span> / 13</span></strong><span class="summary-update" id="last-updated">{e('checking')}</span></div></section>
+    <section class="catalog" aria-labelledby="catalog-title"><div class="section-line"><span class="section-index">02 /</span><h2 id="catalog-title">{e('apps_heading')}</h2><span id="catalog-count">13 {e('tools')}</span></div>
+      <div class="toolbar"><div class="filters" id="filters" role="group" aria-label="{e('apps_heading')}"></div><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="{e('search')}" aria-label="{e('search')}"></label></div>
+      <div class="app-grid" id="apps" aria-live="polite"></div><p class="empty" id="empty" hidden>{e('none')}</p>
+      <div class="static-catalog"><h2>{e('apps_heading')}</h2><p>{known_links}</p></div>
+    </section>
+    <section class="seo-note"><p>{e('comparison')}</p><p>{e('host_text')} <a href="https://github.com/Federicokalik/atelier-homelab">{e('github_cta')}</a></p></section>
+    <footer><p>{e('disclaimer')} <a href="https://getartcraft.com/apps" target="_blank" rel="noopener noreferrer">{e('rights')}</a>.</p><p>{e('made_by')} <a href="https://calicchia.design" target="_blank" rel="noopener noreferrer">Federico Calicchia · calicchia.design</a></p></footer>
+  </main>
+  <script data-cfasync="false" src="/i18n.js?v={i18n_v}"></script><script data-cfasync="false" src="/app.js?v={js_v}" defer></script>
+</body></html>
+'''
+        target = WEB / PATHS[lang].strip("/") / "index.html" if lang != "it" else WEB / "index.html"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(page, encoding="utf-8")
+        manifest = {"name": c["title"], "short_name": "Atelier", "description": c["meta"], "lang": lang, "start_url": PATHS[lang], "scope": "/", "display": "standalone", "background_color": "#111216", "theme_color": "#111216", "icons": [{"src": "/icon-192.png", "sizes": "192x192", "type": "image/png"}, {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png"}]}
+        (target.parent / "manifest.webmanifest").write_text(json.dumps(manifest, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    open_template = (ROOT / "templates" / "open.html").read_text(encoding="utf-8")
+    (WEB / "open.html").write_text(open_template.replace("__I18N_VERSION__", i18n_v).replace("__OPEN_VERSION__", open_v), encoding="utf-8")
+    (WEB / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /apps/\nSitemap: {BASE}/sitemap.xml\n", encoding="utf-8")
+    (WEB / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' + "".join(f'  <url><loc>{BASE}{path}</loc>' + "".join(f'<xhtml:link rel="alternate" hreflang="{code}" href="{BASE}{route}"/>' for code, route in PATHS.items()) + '</url>\n' for path in PATHS.values()) + '</urlset>\n', encoding="utf-8")
+
+if __name__ == "__main__":
+    main()

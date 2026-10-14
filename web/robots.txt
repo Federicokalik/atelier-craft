@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /apps/
+Sitemap: https://atelier.federico.im/sitemap.xml

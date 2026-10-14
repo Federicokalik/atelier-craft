@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111216">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <meta name="robots" content="noindex, nofollow">
+  <title>App — Atelier</title>
+  <style>
+    *{box-sizing:border-box}html,body{height:100%;margin:0}body{font:14px system-ui,-apple-system,"Segoe UI",sans-serif;background:#111216;color:#f5f5f6}
+    iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#151619}
+    .dock{position:fixed;z-index:50;right:0;bottom:18px;display:block}
+    .dock-trigger{position:relative;width:17px;height:82px;padding:5px 0;border:1px solid #777b89;border-right:0;background:#14161de8;color:#f5f5f6;font:700 9px ui-monospace,monospace;letter-spacing:.08em;writing-mode:vertical-rl;text-align:center;box-shadow:-5px 0 18px #0006;cursor:grab;touch-action:none}
+    .dock-trigger:active{cursor:grabbing}.dock-trigger:hover,.dock.open .dock-trigger{background:#252a38}.update-dot{display:none;width:6px;height:6px;background:#f2ba65;border-radius:50%;margin:0 auto 4px}.dock.has-update .update-dot{display:block}
+    .dock-panel{position:absolute;right:100%;bottom:0;width:min(310px,calc(100vw - 24px));padding:20px;background:#14161df5;border:1px solid #777b89;box-shadow:0 0 35px #0009;opacity:0;visibility:hidden;transform:translateX(7px);pointer-events:none;transition:opacity .18s,transform .18s,visibility .18s}
+    .dock:focus-within .dock-panel,.dock.open .dock-panel{opacity:1;visibility:visible;transform:translateX(0);pointer-events:auto}
+    @media(hover:hover) and (pointer:fine){.dock:hover .dock-panel{opacity:1;visibility:visible;transform:translateX(0);pointer-events:auto}}
+    .panel-eyebrow{display:block;color:#94a9dc;font:700 10px ui-monospace,monospace;letter-spacing:.13em}.panel-name{display:block;font-size:21px;font-weight:750;letter-spacing:-.04em;margin:9px 0 17px}.back{display:flex;justify-content:space-between;align-items:center;padding:11px 12px;background:#f3f4f7;color:#14161d;font-weight:750;text-decoration:none}.back:hover{background:#c9d8ff}.source{display:inline-block;margin-top:15px;color:#adb9ce;font-size:12px;text-decoration:none}.source:hover{text-decoration:underline}
+    .update-notice{position:fixed;z-index:60;top:16px;left:50%;transform:translateX(-50%);width:min(420px,calc(100vw - 32px));padding:18px 20px;background:#f4f4f6;color:#15161b;border:1px solid #9aa7c9;box-shadow:0 14px 40px #0009}.update-notice[hidden]{display:none}.update-notice strong{display:block;font-size:17px;letter-spacing:-.03em}.update-notice p{margin:7px 0 16px;color:#424750;font-size:13px;line-height:1.5}.update-actions{display:flex;align-items:center;gap:13px;flex-wrap:wrap}.update-actions button{border:0;cursor:pointer;font:700 12px ui-monospace,monospace;padding:10px 12px}.update-now{background:#202b45;color:#fff}.update-later{background:transparent;color:#414a5e;text-decoration:underline}.panel-update{display:block;margin-top:13px;padding:8px 0;border:0;background:transparent;color:#f2ba65;font:700 12px ui-monospace,monospace;text-align:left;cursor:pointer}.panel-update[hidden]{display:none}
+    @media(prefers-reduced-motion:reduce){.dock-panel{transition:none}}
+  </style>
+</head>
+<body>
+  <iframe id="app-frame" title="App creativa" allow="fullscreen; clipboard-read; clipboard-write" allowfullscreen></iframe>
+  <aside class="update-notice" id="update-notice" role="status" aria-live="polite" hidden>
+    <strong id="update-title">Aggiornamento disponibile</strong>
+    <p>Salva il lavoro nell’app prima di aggiornare. Atelier non può salvare i documenti al posto tuo.</p>
+    <div class="update-actions"><button class="update-now" id="update-now" type="button">Ho salvato, aggiorna</button><button class="update-later" id="update-later" type="button">Alla prossima apertura</button></div>
+  </aside>
+  <div class="dock" id="dock">
+    <div class="dock-panel" id="dock-panel">
+      <span class="panel-eyebrow">ATELIER / APP APERTA</span>
+      <span class="panel-name" id="app-name"></span>
+      <a class="back" href="/">← Torna alla suite <span aria-hidden="true">↗</span></a>
+      <button class="panel-update" id="panel-update" type="button" hidden>Aggiornamento disponibile ↗</button>
+      <a class="source" id="source" target="_blank" rel="noopener noreferrer">Progetto originale ↗</a>
+    </div>
+    <button class="dock-trigger" id="dock-trigger" type="button" aria-label="Apri il menu Atelier; trascina per spostarlo" aria-controls="dock-panel" aria-expanded="false"><span class="update-dot" aria-hidden="true"></span>ATELIER</button>
+  </div>
+  <script data-cfasync="false" src="/i18n.js?v=__I18N_VERSION__"></script>
+  <script data-cfasync="false" src="/open.js?v=__OPEN_VERSION__" defer></script>
+</body>
+</html>
