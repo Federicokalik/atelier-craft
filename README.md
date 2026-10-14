@@ -1,6 +1,6 @@
 # Atelier Homelab
 
-An independent, self-hosted launcher for the official web builds of Craft creative apps. Open them from ChromeOS, Android or any modern desktop browser. Atelier checks upstream releases every 12 hours by default, verifies their published SHA-256 checksums and switches to a new version only after a valid download.
+An independent, self-hosted launcher for the official web builds of Craft creative apps. Open them from ChromeOS, Android or any modern desktop browser. The single prebuilt container image is published on GitHub Container Registry (GHCR). Atelier checks upstream releases every 12 hours by default, verifies their published SHA-256 checksums and switches to a new version only after a valid download.
 
 **Atelier is created by [Federico Calicchia](https://calicchia.design). It is not affiliated with, endorsed by or operated by the ArtCraft team.** The Craft apps, their names, code and rights belong to their respective owners. See the [original app catalogue](https://getartcraft.com/apps) and each upstream repository for their licenses and terms. Atelier's MIT license covers only its own launcher code. The repository contains no upstream app binaries or unlicensed screenshots/icons.
 
@@ -17,7 +17,9 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Open `http://SERVER-IP:8080`. The first download can take time: cards become available individually as verified web builds arrive. Change `HUB_PORT` in `.env` if needed. The web container serves static launcher files; the updater downloads official releases into the `app_data` Docker volume. The volume is not part of GitHub.
+Open `http://SERVER-IP:8080`. Compose pulls `ghcr.io/federicokalik/atelier-homelab:latest`; no local image build or registry login is needed. On the first start, the bundled updater downloads compatible app builds from the original projects, verifies their checksums and stores them in the persistent `app_data` Docker volume. Cards become available individually. App binaries are not embedded in the GHCR image. Change `HUB_PORT` in `.env` if needed.
+
+The GitHub Actions workflow builds and publishes the launcher image for `linux/amd64` and `linux/arm64` after changes to the runtime files on `main`. To refresh the container later, run `docker compose pull && docker compose up -d`. The app updater continues checking original releases automatically between container refreshes. Existing app data survives container recreation in the named volume.
 
 For access outside the LAN, put the service behind an **HTTPS reverse proxy** or tunnel. HTTPS is needed for some browser capabilities used by the apps. Do not expose Docker's plain HTTP port directly to the internet. With a proxy on the same host, bind the Compose port to localhost: `127.0.0.1:${HUB_PORT:-8080}:8080`.
 
@@ -25,11 +27,11 @@ For access outside the LAN, put the service behind an **HTTPS reverse proxy** or
 
 The homepage is Italian at `/`. The other public routes are `/en/`, `/fr/`, `/nl-be/`, `/de/`, `/es/` and `/pt-pt/`. The launcher, app dock and update messages use the selected language; upstream app interfaces retain their own language options. Future app descriptions come from their upstream repository and may remain in its original language.
 
-Edit translations and static SEO copy in `sitegen.py`, then run `python sitegen.py`. This regenerates the seven index pages, `web/i18n.js`, the app wrapper, `robots.txt` and `sitemap.xml`. Generated pages reference JavaScript and CSS with content-hash query versions so a CDN can fetch fresh files on release. If you use your own domain, change `BASE` in `sitegen.py` and regenerate before deploying. The public instance uses `https://atelier.federico.im`.
+Edit translations and static SEO copy in `sitegen.py`, then run `python sitegen.py`. This regenerates the seven index pages, `web/i18n.js`, the app wrapper, `robots.txt` and `sitemap.xml`. Original Open Graph and Twitter images are generated for each language by `python scripts/make_social_images.py` (requires Pillow). Generated pages reference JavaScript and CSS with content-hash query versions so a CDN can fetch fresh files on release. If you use your own domain, change `BASE` in `sitegen.py` and regenerate before building your own image. The public instance uses `https://atelier.federico.im`.
 
 ## Updates and future apps
 
-`updater` checks official `storytold` GitHub releases every `UPDATE_INTERVAL_HOURS` (default 12). For an app, it requires a matching `*-web-*.zip` and `SHA256SUMS.txt`; it verifies SHA-256 and the extracted build before changing the current version. On failure, the previous version remains available. Use `docker compose exec updater python /srv/updater/update.py` for an immediate check.
+The bundled updater checks official `storytold` GitHub releases every `UPDATE_INTERVAL_HOURS` (default 12). For an app, it requires a matching `*-web-*.zip` and `SHA256SUMS.txt`; it verifies SHA-256 and the extracted build before changing the current version. On failure, the previous version remains available. Use `docker compose exec atelier python /srv/updater/update.py` for an immediate check.
 
 Future-app discovery is enabled by default. It checks public `storytold` repositories whose names end in `craft`, then installs a new app only when a compatible, verifiable official web release exists. It cannot guarantee that every future ArtCraft app will provide such a release. Set `DISCOVER_FUTURE_APPS=false` to disable discovery. `GITHUB_TOKEN` is optional and can reduce anonymous API rate limits; use a read-only token and keep `.env` out of Git.
 
@@ -39,7 +41,7 @@ Updates are installed automatically once for the whole self-hosted instance; no 
 
 ## Assets, credits and boundaries
 
-Atelier uses original schematic preview art and letter icons. Official ArtCraft screenshots and icons are deliberately absent because their redistribution rights have not been verified. See [ASSETS.md](ASSETS.md). Font files under `web/fonts/` have their own OFL notices. Before adding any third-party artwork, record its exact source and redistribution license.
+Atelier uses original schematic preview art, letter icons, and localized social preview images. Official ArtCraft screenshots and icons are deliberately absent because their redistribution rights have not been verified. See [ASSETS.md](ASSETS.md). Font files under `web/fonts/` have their own OFL notices. Before adding any third-party artwork, record its exact source and redistribution license.
 
 The app builds are fetched at runtime from upstream releases and retain their own licenses. The launcher does not modify the downloaded app code or provide document storage/sync. Android touch support depends on the individual app.
 

@@ -12,6 +12,7 @@ WEB = ROOT / "web"
 BASE = "https://atelier.federico.im"
 LANGS = ["it", "en", "fr", "nl-BE", "de", "es", "pt-PT"]
 PATHS = {"it": "/", "en": "/en/", "fr": "/fr/", "nl-BE": "/nl-be/", "de": "/de/", "es": "/es/", "pt-PT": "/pt-pt/"}
+OG_LOCALES = {"it": "it_IT", "en": "en_US", "fr": "fr_FR", "nl-BE": "nl_BE", "de": "de_DE", "es": "es_ES", "pt-PT": "pt_PT"}
 LABELS = {"it": "Italiano", "en": "English", "fr": "Français", "nl-BE": "Nederlands (BE)", "de": "Deutsch", "es": "Español", "pt-PT": "Português (PT)"}
 APPS = [("photocraft", "PhotoCraft", "Adobe Photoshop"), ("vectorcraft", "VectorCraft", "Adobe Illustrator"), ("filmcraft", "FilmCraft", "Adobe Premiere Pro"), ("lightcraft", "LightCraft", "Adobe Lightroom Classic"), ("pdfcraft", "PdfCraft", "Adobe Acrobat"), ("effectcraft", "EffectCraft", "Adobe After Effects"), ("designcraft", "DesignCraft", "Adobe InDesign"), ("figcraft", "FigCraft", "Figma"), ("wordcraft", "WordCraft", "Microsoft Word"), ("soundcraft", "SoundCraft", "Adobe Audition"), ("deckcraft", "DeckCraft", "Microsoft PowerPoint"), ("cadcraft", "CADCraft", "Autodesk AutoCAD"), ("gridcraft", "GridCraft", "Microsoft Excel")]
 
@@ -134,6 +135,13 @@ def main() -> None:
 {alternates}
   <meta property="og:type" content="website"><meta property="og:title" content="{e('title')}">
   <meta property="og:description" content="{e('meta')}"><meta property="og:url" content="{url}">
+  <meta property="og:locale" content="{OG_LOCALES[lang]}">
+  <meta property="og:image" content="{BASE}/og-{lang.lower()}.png">
+  <meta property="og:image:type" content="image/png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="{e('title')}">
+  <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{e('title')}">
+  <meta name="twitter:description" content="{e('meta')}"><meta name="twitter:image" content="{BASE}/twitter-{lang.lower()}.png">
+  <meta name="twitter:image:alt" content="{e('title')}">
   <link rel="manifest" href="{PATHS[lang]}manifest.webmanifest"><link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css?v={css_v}">
   <title>{e('title')}</title>
