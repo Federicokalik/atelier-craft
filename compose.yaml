@@ -29,7 +29,7 @@ services:
     volumes:
       - translate_models:/home/libretranslate/.local
     healthcheck:
-      test: ["CMD-SHELL", "./venv/bin/python scripts/healthcheck.py"]
+      test: ["CMD", "./venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5).read()"]
       interval: 30s
       timeout: 10s
       retries: 5
