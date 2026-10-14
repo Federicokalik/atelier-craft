@@ -131,7 +131,7 @@ async function refresh() {
 $('search').addEventListener('input', render);
 render();
 refresh();
-setInterval(refresh,15_000);
+setInterval(refresh,30 * 60_000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 window.addEventListener('focus', refresh);
 window.addEventListener('online', refresh);

@@ -76,7 +76,7 @@
       document.getElementById('source').href = `https://github.com/storytold/${slug}`;
       frame.title = name;
       checkVersion();
-      setInterval(checkVersion, 15_000);
+      setInterval(checkVersion, 30 * 60_000);
       document.addEventListener('visibilitychange', () => { if (!document.hidden) checkVersion(); });
       window.addEventListener('focus', checkVersion);
       window.addEventListener('online', checkVersion);
