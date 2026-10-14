@@ -50,7 +50,7 @@ def request(url, *, json_result=False):
     return json.loads(data) if json_result else data
 
 
-def discover():
+def discover(previous=None):
     apps = {item[0]: item for item in KNOWN}
     if os.environ.get("DISCOVER_FUTURE_APPS", "true").lower() != "true":
         return list(apps.values())
@@ -68,6 +68,9 @@ def discover():
             page += 1
     except (urllib.error.URLError, ValueError) as exc:
         print(f"Scoperta nuove app non disponibile: {exc}", flush=True)
+        for slug, entry in (previous or {}).items():
+            if slug not in apps and re.fullmatch(r"[a-z0-9-]*craft", slug):
+                apps[slug] = (slug, entry.get("name", slug), entry.get("category", "Nuova app"), entry.get("description", "Nuova app ArtCraft"))
     return list(apps.values())
 
 
@@ -197,7 +200,7 @@ def install(slug, release, asset):
 def update_once():
     prior = load_catalog()
     result = []
-    for slug, name, category, description in discover():
+    for slug, name, category, description in discover(prior):
         entry = {
             "slug": slug, "name": name, "category": category, "description": description,
             "source": f"https://github.com/{OWNER}/{slug}", "version": prior.get(slug, {}).get("version"),
