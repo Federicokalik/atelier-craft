@@ -31,9 +31,7 @@ jobs:
       - uses: docker/metadata-action@v5
         id: meta
         with:
-          images: |
-            ghcr.io/federicokalik/atelier-craft
-            ghcr.io/federicokalik/atelier-homelab
+          images: ghcr.io/federicokalik/atelier-craft
           tags: |
             type=raw,value=latest
             type=sha,format=short
