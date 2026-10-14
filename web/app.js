@@ -16,6 +16,7 @@ const accents = ['#78a9ff','#ff826a','#a786ff','#ffc36a','#93d0b5','#ef82bd','#a
 const $ = id => document.getElementById(id);
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
 const safeSlug = slug => typeof slug === 'string' && /^[a-z0-9-]+$/.test(slug) ? slug : '';
+const appDescription = app => knownSlugs.has(app.slug) ? t(`desc_${app.slug}`) : app.descriptions?.[locale] || app.description || '';
 let apps = known.map(([slug,name]) => ({slug,name,available:false}));
 let activeFilter = 'all';
 let updatedAt = null;
@@ -67,8 +68,8 @@ function render() {
     if (activeFilter === 'favorites' && !favorites.has(app.slug)) return false;
     if (activeFilter === 'install' && app.available) return false;
     const knownItem = known.find(item => item[0] === app.slug);
-    const category = knownItem ? t(knownItem[2]) : app.category || t('new_app');
-    const description = knownItem ? t(`desc_${app.slug}`) : app.description || '';
+    const category = knownItem ? t(knownItem[2]) : t('new_app');
+    const description = appDescription(app);
     return `${app.name} ${category} ${description} ${comparisons[app.slug] || ''}`.toLocaleLowerCase(locale).includes(query);
   });
   $('empty').hidden = filtered.length > 0;
@@ -79,8 +80,8 @@ function render() {
     const accent = accents[(number - 1) % accents.length];
     const isFavorite = favorites.has(slug);
     const knownItem = known.find(item => item[0] === slug);
-    const category = knownItem ? t(knownItem[2]) : app.category || t('new_app');
-    const description = knownItem ? t(`desc_${slug}`) : app.description || '';
+    const category = knownItem ? t(knownItem[2]) : t('new_app');
+    const description = appDescription(app);
     const comparison = comparisons[slug] ? `<span class="card-compare">${escapeHtml(t('similar_to'))} ${escapeHtml(comparisons[slug])}.</span>` : '';
     const progress = app.updating ? t('updating') : app.installing ? t('installing') : '';
     const unavailableKey = app.status === 'Versione web non pubblicata' ? 'web_unavailable' : app.status === 'Non disponibile' ? 'unavailable' : 'waiting';

@@ -9,6 +9,8 @@ services:
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       UPDATE_INTERVAL_HOURS: ${UPDATE_INTERVAL_HOURS:-12}
       DISCOVER_FUTURE_APPS: ${DISCOVER_FUTURE_APPS:-true}
+      TRANSLATE_URL: ${TRANSLATE_URL:-}
+      TRANSLATE_API_KEY: ${TRANSLATE_API_KEY:-}
     volumes:
       - app_data:/srv/data
     healthcheck:
@@ -17,5 +19,22 @@ services:
       timeout: 5s
       retries: 3
 
+  translate:
+    image: libretranslate/libretranslate:v1.9.6
+    profiles: [translations]
+    restart: unless-stopped
+    environment:
+      LT_LOAD_ONLY: en,it,fr,nl,de,es,pt
+      LT_THREADS: 1
+    volumes:
+      - translate_models:/home/libretranslate/.local
+    healthcheck:
+      test: ["CMD-SHELL", "./venv/bin/python scripts/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s
+
 volumes:
   app_data:
+  translate_models:

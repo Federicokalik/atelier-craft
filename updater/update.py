@@ -33,6 +33,7 @@ KNOWN = [
 ]
 MAX_ZIP_BYTES = 250 * 1024 * 1024
 MAX_UNPACKED_BYTES = 700 * 1024 * 1024
+TRANSLATION_TARGETS = {"it": "it", "fr": "fr", "nl-BE": "nl", "de": "de", "es": "es", "pt-PT": "pt"}
 
 
 def now():
@@ -76,6 +77,34 @@ def load_catalog():
         return {app["slug"]: app for app in json.loads(path.read_text(encoding="utf-8"))["apps"]}
     except (OSError, ValueError, KeyError):
         return {}
+
+
+def localized_descriptions(description, previous):
+    """Translate changed upstream copy once, keeping successful results across checks."""
+    cached = previous.get("descriptions", {}) if previous.get("description") == description else {}
+    translations = {key: value for key, value in cached.items() if key in TRANSLATION_TARGETS and isinstance(value, str) and value.strip()}
+    url = os.environ.get("TRANSLATE_URL", "").strip()
+    if not url or not description:
+        return translations
+    for locale, target in TRANSLATION_TARGETS.items():
+        if locale in translations:
+            continue
+        payload = {"q": description, "source": "en", "target": target, "format": "text"}
+        api_key = os.environ.get("TRANSLATE_API_KEY", "").strip()
+        if api_key:
+            payload["api_key"] = api_key
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json", "User-Agent": "atelier-craft/1"})
+        try:
+            with urllib.request.urlopen(req, timeout=25) as response:
+                result = json.load(response)
+            translated = result.get("translatedText")
+            if isinstance(translated, str) and translated.strip():
+                translations[locale] = translated.strip()
+        except (urllib.error.URLError, ValueError, OSError) as exc:
+            print(f"Traduzione {locale} rinviata: {exc}", flush=True)
+            break
+    return translations
 
 
 def save_catalog(apps):
@@ -182,12 +211,19 @@ def update_once():
                 entry["status"] = "Pronta"
             else:
                 entry["status"] = "Versione web non pubblicata"
+        except urllib.error.HTTPError as exc:
+            entry["status"] = "Versione web non pubblicata" if exc.code == 404 and not entry["available"] else "Aggiornamento non riuscito" if entry["available"] else "Non disponibile"
+            if exc.code != 404:
+                entry["error"] = str(exc)[:180]
+            print(f"{slug}: {exc}", flush=True)
         except (urllib.error.URLError, ValueError, OSError, zipfile.BadZipFile, KeyError) as exc:
             entry["status"] = "Aggiornamento non riuscito" if entry["available"] else "Non disponibile"
             entry["error"] = str(exc)[:180]
             print(f"{slug}: {exc}", flush=True)
         entry.pop("updating", None)
         entry.pop("installing", None)
+        if slug not in {item[0] for item in KNOWN}:
+            entry["descriptions"] = localized_descriptions(description, prior.get(slug, {}))
         result.append(entry)
         save_catalog(result + [prior[s] for s in prior if s not in {a["slug"] for a in result}])
         print(f"{slug}: {entry['status']} {entry['version'] or ''}", flush=True)
