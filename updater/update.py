@@ -172,6 +172,11 @@ def update_once():
             release = request(f"https://api.github.com/repos/{OWNER}/{slug}/releases/latest", json_result=True)
             asset = web_asset(release, slug)
             if asset:
+                if release.get("tag_name") != entry["version"] or not entry["available"]:
+                    progress_key = "updating" if entry["available"] else "installing"
+                    entry[progress_key] = True
+                    entry["status"] = "Aggiornamento in corso" if entry["available"] else "Installazione in corso"
+                    save_catalog(result + [entry] + [prior[s] for s in prior if s not in {a["slug"] for a in result} and s != slug])
                 entry["version"] = install(slug, release, asset)
                 entry["available"] = True
                 entry["status"] = "Pronta"
@@ -181,6 +186,8 @@ def update_once():
             entry["status"] = "Aggiornamento non riuscito" if entry["available"] else "Non disponibile"
             entry["error"] = str(exc)[:180]
             print(f"{slug}: {exc}", flush=True)
+        entry.pop("updating", None)
+        entry.pop("installing", None)
         result.append(entry)
         save_catalog(result + [prior[s] for s in prior if s not in {a["slug"] for a in result}])
         print(f"{slug}: {entry['status']} {entry['version'] or ''}", flush=True)

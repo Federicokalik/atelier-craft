@@ -6,6 +6,8 @@ An independent, self-hosted launcher for the official web builds of Craft creati
 
 PhotoCraft is described by its authors as a [Photoshop alternative](https://github.com/storytold/photocraft); VectorCraft as an [Illustrator alternative](https://github.com/storytold/vectorcraft). These descriptions refer to the original apps, not a feature-equivalence promise by Atelier.
 
+The catalogue also identifies each app's area of use through familiar products such as Adobe Premiere Pro, Lightroom Classic, Acrobat, After Effects, InDesign and Audition; Figma; Microsoft Word, PowerPoint and Excel; and Autodesk AutoCAD. These product names are comparison references only. They do not imply endorsement, affiliation or identical functionality, and web builds may differ from the features described on the original app pages.
+
 ## Quick start
 
 ```sh
@@ -30,6 +32,8 @@ Edit translations and static SEO copy in `sitegen.py`, then run `python sitegen.
 `updater` checks official `storytold` GitHub releases every `UPDATE_INTERVAL_HOURS` (default 12). For an app, it requires a matching `*-web-*.zip` and `SHA256SUMS.txt`; it verifies SHA-256 and the extracted build before changing the current version. On failure, the previous version remains available. Use `docker compose exec updater python /srv/updater/update.py` for an immediate check.
 
 Future-app discovery is enabled by default. It checks public `storytold` repositories whose names end in `craft`, then installs a new app only when a compatible, verifiable official web release exists. It cannot guarantee that every future ArtCraft app will provide such a release. Set `DISCOVER_FUTURE_APPS=false` to disable discovery. `GITHUB_TOKEN` is optional and can reduce anonymous API rate limits; use a read-only token and keep `.env` out of Git.
+
+While a build is downloading or being verified, the relevant card shows a localized **update in progress, come back shortly** or **installation in progress** message. An already installed version remains usable while its replacement is prepared. The catalogue is written atomically and the launcher checks it every 15 seconds.
 
 An open app stays on the exact version it loaded. The wrapper checks the catalogue every minute. If a newer version arrives, it offers **save your work, then update** or **use it next time**. Atelier cannot save documents on behalf of an upstream app. The draggable Atelier tab opens the return link and update notice; its position and favorites are stored in that browser.
 

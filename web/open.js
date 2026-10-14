@@ -43,6 +43,9 @@
         if (!response.ok) throw new Error('Catalogo non disponibile');
         const catalog = await response.json();
         const app = catalog.apps?.find(item => item.slug === slug && item.available);
+        const progress = document.getElementById('panel-progress');
+        progress.hidden = !app?.updating;
+        progress.textContent = app?.updating ? t('updating') : '';
         if (!app || !validVersion(app.version)) {
           if (!activeVersion && !frame.hasAttribute('src')) frame.src = `/apps/${slug}/current/`;
           return;

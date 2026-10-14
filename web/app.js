@@ -11,6 +11,7 @@ const locale = document.body.dataset.locale || 'it';
 const copy = window.ATELIER_COPY?.[locale] || window.ATELIER_COPY?.it || {};
 const t = key => copy[key] || key;
 const knownSlugs = new Set(known.map(item => item[0]));
+const comparisons = {photocraft:'Adobe Photoshop',vectorcraft:'Adobe Illustrator',filmcraft:'Adobe Premiere Pro',lightcraft:'Adobe Lightroom Classic',pdfcraft:'Adobe Acrobat',effectcraft:'Adobe After Effects',designcraft:'Adobe InDesign',figcraft:'Figma',wordcraft:'Microsoft Word',soundcraft:'Adobe Audition',deckcraft:'Microsoft PowerPoint',cadcraft:'Autodesk AutoCAD',gridcraft:'Microsoft Excel'};
 const accents = ['#78a9ff','#ff826a','#a786ff','#ffc36a','#93d0b5','#ef82bd','#a4d26f','#48dcb0','#9aa9ff','#71cbe8','#ff9c62','#6ad2dc','#a7d899'];
 const $ = id => document.getElementById(id);
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
@@ -54,7 +55,7 @@ function render() {
     const knownItem = known.find(item => item[0] === app.slug);
     const category = knownItem ? t(knownItem[2]) : app.category || t('new_app');
     const description = knownItem ? t(`desc_${app.slug}`) : app.description || '';
-    return `${app.name} ${category} ${description}`.toLocaleLowerCase(locale).includes(query);
+    return `${app.name} ${category} ${description} ${comparisons[app.slug] || ''}`.toLocaleLowerCase(locale).includes(query);
   });
   $('empty').hidden = filtered.length > 0;
   $('empty').textContent = activeFilter === 'favorites' && !query ? t('fav_hint') : t('none');
@@ -66,10 +67,13 @@ function render() {
     const knownItem = known.find(item => item[0] === slug);
     const category = knownItem ? t(knownItem[2]) : app.category || t('new_app');
     const description = knownItem ? t(`desc_${slug}`) : app.description || '';
+    const comparison = comparisons[slug] ? `<span class="card-compare">${escapeHtml(t('similar_to'))} ${escapeHtml(comparisons[slug])}.</span>` : '';
+    const progress = app.updating ? t('updating') : app.installing ? t('installing') : '';
+    const unavailableKey = app.status === 'Versione web non pubblicata' ? 'web_unavailable' : app.status === 'Non disponibile' ? 'unavailable' : 'waiting';
     const href = app.available ? `/open.html?app=${slug}&lang=${encodeURIComponent(locale)}` : `https://github.com/storytold/${slug}`;
     const target = app.available ? '' : ' target="_blank" rel="noopener noreferrer"';
     const action = app.available ? t('open') : t('source');
-    return `<article class="card" style="--card-accent:${accent}"><a class="card-link" href="${href}"${target} aria-label="${escapeHtml(action)}: ${escapeHtml(app.name)}"></a><div class="shot">${preview(app,number - 1)}<span class="card-number">${String(number).padStart(2,'0')} / ${String(apps.length).padStart(2,'0')}</span><span class="app-monogram" aria-hidden="true">${escapeHtml(app.name.slice(0,1))}</span><button class="favorite ${isFavorite ? 'selected' : ''}" type="button" data-favorite="${slug}" aria-label="${escapeHtml(t(isFavorite ? 'remove_fav' : 'add_fav'))} ${escapeHtml(app.name)} ${escapeHtml(t(isFavorite ? 'from_fav' : 'to_fav'))}" aria-pressed="${isFavorite}">${isFavorite ? '★' : '☆'}</button></div><div class="card-main"><span class="card-kicker">${escapeHtml(category)}</span><h3>${escapeHtml(app.name)}</h3><p class="card-desc">${escapeHtml(description)}</p></div><div class="card-footer"><span class="status ${app.available ? '' : 'unavailable'}">${app.available ? `● ${escapeHtml(t('available'))} · ${escapeHtml(app.version || '')}` : escapeHtml(t('waiting'))}</span><span class="open-link ${app.available ? '' : 'unavailable'}" aria-hidden="true">${escapeHtml(action)}</span></div></article>`;
+    return `<article class="card" style="--card-accent:${accent}"><a class="card-link" href="${href}"${target} aria-label="${escapeHtml(action)}: ${escapeHtml(app.name)}"></a><div class="shot">${preview(app,number - 1)}<span class="card-number">${String(number).padStart(2,'0')} / ${String(apps.length).padStart(2,'0')}</span><span class="app-monogram" aria-hidden="true">${escapeHtml(app.name.slice(0,1))}</span><button class="favorite ${isFavorite ? 'selected' : ''}" type="button" data-favorite="${slug}" aria-label="${escapeHtml(t(isFavorite ? 'remove_fav' : 'add_fav'))} ${escapeHtml(app.name)} ${escapeHtml(t(isFavorite ? 'from_fav' : 'to_fav'))}" aria-pressed="${isFavorite}">${isFavorite ? '★' : '☆'}</button></div><div class="card-main"><span class="card-kicker">${escapeHtml(category)}</span><h3>${escapeHtml(app.name)}</h3><p class="card-desc">${escapeHtml(description)}</p>${comparison}</div><div class="card-footer"><span class="status ${progress ? 'progress' : app.available ? '' : 'unavailable'}">${progress ? `◌ ${escapeHtml(progress)}` : app.available ? `● ${escapeHtml(t('available'))} · ${escapeHtml(app.version || '')}` : escapeHtml(t(unavailableKey))}</span><span class="open-link ${app.available ? '' : 'unavailable'}" aria-hidden="true">${escapeHtml(action)}</span></div></article>`;
   }).join('');
   const showPromo = activeFilter === 'all' && !query;
   $('apps').innerHTML = cards + (showPromo ? promo() : '');
@@ -104,4 +108,4 @@ async function refresh() {
 $('search').addEventListener('input', render);
 render();
 refresh();
-setInterval(refresh,60_000);
+setInterval(refresh,15_000);
