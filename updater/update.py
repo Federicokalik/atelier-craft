@@ -79,10 +79,17 @@ def load_catalog():
         return {}
 
 
+def normalize_translation(source, translated, locale):
+    if locale == "it" and re.search(r"\bRust\b", source):
+        translated = re.sub(r"\bin pura ruggine\b", "interamente in Rust", translated, flags=re.IGNORECASE)
+        translated = re.sub(r"\bruggine\b", "Rust", translated, flags=re.IGNORECASE)
+    return translated
+
+
 def localized_descriptions(description, previous):
     """Translate changed upstream copy once, keeping successful results across checks."""
     cached = previous.get("descriptions", {}) if previous.get("description") == description else {}
-    translations = {key: value for key, value in cached.items() if key in TRANSLATION_TARGETS and isinstance(value, str) and value.strip()}
+    translations = {key: normalize_translation(description, value.strip(), key) for key, value in cached.items() if key in TRANSLATION_TARGETS and isinstance(value, str) and value.strip()}
     url = os.environ.get("TRANSLATE_URL", "").strip()
     if not url or not description:
         return translations
@@ -100,7 +107,7 @@ def localized_descriptions(description, previous):
                 result = json.load(response)
             translated = result.get("translatedText")
             if isinstance(translated, str) and translated.strip():
-                translations[locale] = translated.strip()
+                translations[locale] = normalize_translation(description, translated.strip(), locale)
         except (urllib.error.URLError, ValueError, OSError) as exc:
             print(f"Traduzione {locale} rinviata: {exc}", flush=True)
             break
@@ -212,7 +219,11 @@ def update_once():
             else:
                 entry["status"] = "Versione web non pubblicata"
         except urllib.error.HTTPError as exc:
-            entry["status"] = "Versione web non pubblicata" if exc.code == 404 and not entry["available"] else "Aggiornamento non riuscito" if entry["available"] else "Non disponibile"
+            if exc.code in (403, 429):
+                previous_status = prior.get(slug, {}).get("status")
+                entry["status"] = previous_status if previous_status in ("Pronta", "Versione web non pubblicata", "In attesa") else "Pronta" if entry["available"] else "In attesa"
+            else:
+                entry["status"] = "Versione web non pubblicata" if exc.code == 404 and not entry["available"] else "Aggiornamento non riuscito" if entry["available"] else "Non disponibile"
             if exc.code != 404:
                 entry["error"] = str(exc)[:180]
             print(f"{slug}: {exc}", flush=True)
