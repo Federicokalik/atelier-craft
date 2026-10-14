@@ -11,13 +11,12 @@ The catalogue also identifies each app's area of use through familiar products s
 ## Quick start
 
 ```sh
-git clone https://github.com/Federicokalik/atelier-homelab.git
-cd atelier-homelab
-cp .env.example .env
+mkdir atelier && cd atelier
+curl -fsSLO https://raw.githubusercontent.com/Federicokalik/atelier-homelab/main/compose.yaml
 docker compose up -d
 ```
 
-Open `http://SERVER-IP:8080`. Compose pulls `ghcr.io/federicokalik/atelier-homelab:latest`; no local image build or registry login is needed. On the first start, the bundled updater downloads compatible app builds from the original projects, verifies their checksums and stores them in the persistent `app_data` Docker volume. Cards become available individually. App binaries are not embedded in the GHCR image. Change `HUB_PORT` in `.env` if needed.
+Open `http://SERVER-IP:8080`. Compose pulls the public [GHCR image](https://github.com/Federicokalik/atelier-homelab/pkgs/container/atelier-homelab); no local image build or registry login is needed. On the first start, the bundled updater downloads compatible app builds from the original projects, verifies their checksums and stores them in the persistent `app_data` Docker volume. Cards become available individually. App binaries are not embedded in the GHCR image. For a different port or update schedule, download `.env.example` from the repository as `.env` and edit it, or set the environment variables shown in `compose.yaml`.
 
 The GitHub Actions workflow builds and publishes the launcher image for `linux/amd64` and `linux/arm64` after changes to the runtime files on `main`. To refresh the container later, run `docker compose pull && docker compose up -d`. The app updater continues checking original releases automatically between container refreshes. Existing app data survives container recreation in the named volume.
 
