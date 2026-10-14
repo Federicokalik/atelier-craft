@@ -19,6 +19,20 @@ const safeSlug = slug => typeof slug === 'string' && /^[a-z0-9-]+$/.test(slug) ?
 let apps = known.map(([slug,name]) => ({slug,name,available:false}));
 let activeFilter = 'all';
 let updatedAt = null;
+let seenVersions = null;
+let refreshing = false;
+const updateToast = document.createElement('aside');
+updateToast.className = 'catalog-update-toast';
+updateToast.setAttribute('role','status');
+updateToast.setAttribute('aria-live','polite');
+updateToast.hidden = true;
+const updateMessage = document.createElement('span');
+const dismissUpdate = document.createElement('button');
+dismissUpdate.type = 'button';
+dismissUpdate.textContent = t('dismiss');
+dismissUpdate.addEventListener('click', () => { updateToast.hidden = true; });
+updateToast.append(updateMessage, dismissUpdate);
+document.body.append(updateToast);
 let favorites;
 try { favorites = new Set(JSON.parse(localStorage.getItem('atelier:favorites') || '[]')); }
 catch { favorites = new Set(); }
@@ -90,18 +104,26 @@ function render() {
 }
 
 async function refresh() {
+  if (refreshing) return;
+  refreshing = true;
   try {
     const response = await fetch('/catalog.json', {cache:'no-store'});
     if (!response.ok) throw new Error('Catalog unavailable');
     const catalog = await response.json();
     if (Array.isArray(catalog.apps)) {
+      const changed = seenVersions ? catalog.apps.filter(app => app.available && app.version && seenVersions.has(app.slug) && seenVersions.get(app.slug) !== app.version) : [];
+      seenVersions = new Map(catalog.apps.filter(app => app.available && app.version).map(app => [app.slug,app.version]));
+      if (changed.length) {
+        updateMessage.textContent = t('auto_updated').replace('{name}', changed.map(app => app.name).join(', '));
+        updateToast.hidden = false;
+      }
       const bySlug = new Map(catalog.apps.filter(app => safeSlug(app.slug)).map(app => [app.slug,app]));
       const merged = known.map(([slug,name]) => ({slug,name,...bySlug.get(slug)}));
       const extras = catalog.apps.filter(app => safeSlug(app.slug) && !knownSlugs.has(app.slug));
       apps = [...merged,...extras];
       updatedAt = catalog.updatedAt || null;
     }
-  } catch {}
+  } catch {} finally { refreshing = false; }
   render();
 }
 
@@ -109,3 +131,6 @@ $('search').addEventListener('input', render);
 render();
 refresh();
 setInterval(refresh,15_000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+window.addEventListener('focus', refresh);
+window.addEventListener('online', refresh);

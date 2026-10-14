@@ -26,6 +26,7 @@
     let deferredVersion = null;
     let drag = null;
     let suppressClick = false;
+    let checking = false;
     const setOpen = value => { dock.classList.toggle('open',value); trigger.setAttribute('aria-expanded',String(value)); };
     const versionPath = version => `/apps/${slug}/${encodeURIComponent(version)}/`;
     const validVersion = version => typeof version === 'string' && /^v?[0-9][a-zA-Z0-9._-]*$/.test(version);
@@ -37,7 +38,8 @@
       if (deferredVersion !== version) notice.hidden = false;
     }
     async function checkVersion() {
-      if (!/^[a-z0-9-]+$/.test(slug)) return;
+      if (!/^[a-z0-9-]+$/.test(slug) || checking) return;
+      checking = true;
       try {
         const response = await fetch('/catalog.json', {cache:'no-store'});
         if (!response.ok) throw new Error('Catalogo non disponibile');
@@ -46,6 +48,9 @@
         const progress = document.getElementById('panel-progress');
         progress.hidden = !app?.updating;
         progress.textContent = app?.updating ? t('updating') : '';
+        const progressNotice = document.getElementById('progress-notice');
+        progressNotice.hidden = !app?.updating || !notice.hidden;
+        progressNotice.textContent = app?.updating ? t('updating') : '';
         if (!app || !validVersion(app.version)) {
           if (!activeVersion && !frame.hasAttribute('src')) frame.src = `/apps/${slug}/current/`;
           return;
@@ -58,6 +63,8 @@
         }
       } catch {
         if (!activeVersion && !frame.hasAttribute('src')) frame.src = `/apps/${slug}/current/`;
+      } finally {
+        checking = false;
       }
     }
     if (!/^[a-z0-9-]+$/.test(slug)) {
@@ -69,7 +76,10 @@
       document.getElementById('source').href = `https://github.com/storytold/${slug}`;
       frame.title = name;
       checkVersion();
-      setInterval(checkVersion, 60_000);
+      setInterval(checkVersion, 15_000);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) checkVersion(); });
+      window.addEventListener('focus', checkVersion);
+      window.addEventListener('online', checkVersion);
     }
     document.getElementById('update-now').addEventListener('click', () => {
       if (!pendingVersion) return;
